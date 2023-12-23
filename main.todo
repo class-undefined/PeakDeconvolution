@@ -1,0 +1,9 @@
+✔ 峰值提取 (`from scipy.signal import find_peaks`) @done(23-12-23 12:45)
+✔ 构建单独峰的模型 (伪伏依特峰[洛仑兹+高斯模型]) @done(23-12-23 12:46)
+☐ 调研 @started(23-12-23 12:50)
+    ✔ 1. Peak Deconvolution (名词: 峰值反卷积) @done(23-12-23 12:54)
+        ✔ [peak-deconvolution](https://medium.com/@kwakyenimo/peak-deconvolution-with-the-help-of-machine-learning-b6a19bed798a) @done(23-12-23 12:59)
+    ✔ 2. 具体公式是 F = sum(Peak1, ..., PeakN) @done(23-12-23 13:04)
+    ☐ 3. Peak Deconvolution 实际上就是将峰值拆分成多个峰值, 但是这个过程中需要知道峰值的个数, 但是峰值的个数是未知的, 所以需要先进行峰值提取, 然后再进行峰值反卷积
+        ✔ 2.1. 峰值提取 @done(23-12-23 13:03)
+        ☐ 2.2. 峰值反卷积
