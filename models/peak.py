@@ -79,6 +79,9 @@ class CombinedPeaks(nn.Module):
         # 将所有峰的贡献加总，以生成组合的光谱
         return sum(peak(x) for peak in self.peaks)
 
+    def name(self):
+        return f"CombinedPeaks [{len(self.peaks)}]"
+
     @classmethod
     def gen(cls, peaks: List["PseudoVoigtPeak"]) -> "CombinedPeaks":
         """生成组合峰"""
@@ -92,12 +95,13 @@ class CombinedPeaks(nn.Module):
         was_training = self.training
         self.eval()
         Y = torch.stack([self.forward(x) for x in X]).detach()
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.plot(X.numpy(), Y.numpy(), label=self.name())
         for peak in self.peaks:
             peak.figure(X, ax=ax)
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.legend(loc='upper center', bbox_to_anchor=(0.25, 1.15))
+        ax.legend(loc='upper center', bbox_to_anchor=(0.25, 1))
         if was_training:
             self.train()
         return fig
