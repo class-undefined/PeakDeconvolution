@@ -1,5 +1,9 @@
 import numpy as np
+import torch
+from torch import tensor
 from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+from ..models.peak import PseudoVoigtPeak, CombinedPeaks  # 替换为包含 PseudoVoigtPeak 类的模块
 
 
 def test():
@@ -9,3 +13,34 @@ def test():
     # 寻找峰值
     peaks = find_peaks(x, prominence=3)
     print(peaks)
+
+
+def test_tensor():
+    x = tensor([0, 1, 2, 1, 0, 1, 2, 3, 1, 0], dtype=torch.int32)
+    for i in x:
+        print(i)
+
+
+def test_figure_method1():
+    # 创建 PseudoVoigtPeak 实例
+    peak1 = PseudoVoigtPeak.gen(1.0, 0.0, 1.0, 1.0, 0.5)
+    peak2 = PseudoVoigtPeak.gen(1.0, 1.0, 1.0, 1.0, 0.5)
+
+    # 生成输入数据 X
+    X = torch.linspace(-5, 5, 100)
+    fig, ax = plt.subplots()
+    # 调用 figure 方法
+    peak1.figure(X, ax=ax)
+    peak2.figure(X, ax=ax)
+    plt.show()
+
+
+def test_figure_method2():
+    # 创建 CombinedPeaks 实例
+    peak1 = PseudoVoigtPeak.gen(1.0, 0.0, 1.0, 1.0, 0.5)
+    peak2 = PseudoVoigtPeak.gen(1.0, 1.0, 1.0, 1.0, 0.5)
+
+    # 生成输入数据 X
+    X = torch.linspace(-5, 5, 100)
+    CombinedPeaks.gen([peak1, peak2]).figure(X)
+    plt.show()
