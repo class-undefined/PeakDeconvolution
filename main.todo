@@ -5,8 +5,16 @@
         ✔ [peak-deconvolution](https://medium.com/@kwakyenimo/peak-deconvolution-with-the-help-of-machine-learning-b6a19bed798a) @done(23-12-23 12:59)
     ✔ 2. 具体公式是 F = sum(Peak1, ..., PeakN) @done(23-12-23 13:04)
     ☐ 3. Peak Deconvolution 实际上就是将峰值拆分成多个峰值, 但是这个过程中需要知道峰值的个数, 但是峰值的个数是未知的, 所以需要先进行峰值提取, 然后再进行峰值反卷积
-        ✔ 2.1. 峰值提取 @done(23-12-23 13:03)
-        ☐ 2.2. 峰值反卷积
+        ✔ 3.1 峰值提取 @done(23-12-23 13:03)
+        ☐ 3.2 平滑处理
+        ☐ 3.3 峰值反卷积
+            ✔ 3.3.1 根据 Peak 来构建 CombinedPeaks (CombinedPeaks.from_peaks) @done(23-12-23 22:39)
+            ☐ 3.3.2 是否需要考虑重叠峰呢
+                ☐ 3.3.2.1 考虑重叠峰
+                    ☐ 3.3.2.1.1 重叠峰的拆分
+                ☐ 3.3.2 不考虑重叠峰
+                    ☐ 3.3.2.2.1 意味着识别出顶峰就可以确定中心位置
+
 ☐ 功能
     ✔ 1. 模型定义 @done(23-12-23 21:30)
     ✔ 2. 模型图表展示 @done(23-12-23 21:31)

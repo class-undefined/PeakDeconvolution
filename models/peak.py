@@ -82,13 +82,6 @@ class CombinedPeaks(nn.Module):
     def name(self):
         return f"CombinedPeaks [{len(self.peaks)}]"
 
-    @classmethod
-    def gen(cls, peaks: List["PseudoVoigtPeak"]) -> "CombinedPeaks":
-        """生成组合峰"""
-        this = cls(0)
-        this.peaks = nn.ModuleList(peaks)
-        return this
-
     def figure(self, X: Tensor) -> plt.Figure:
         # 检查是否提供了轴对象，如果没有，则创建新图形和轴
         # 生成组合峰的可视化图像
@@ -105,3 +98,38 @@ class CombinedPeaks(nn.Module):
         if was_training:
             self.train()
         return fig
+
+    @classmethod
+    def gen(cls, peaks: List["PseudoVoigtPeak"]) -> "CombinedPeaks":
+        """生成组合峰"""
+        this = cls(0)
+        this.peaks = nn.ModuleList(peaks)
+        return this
+
+    @classmethod
+    def from_peaks(cls, Y: Tensor) -> "CombinedPeaks":
+        """通过识别峰值点来构建组合峰模型"""
+        from scipy.signal import find_peaks
+        peaks = find_peaks(Y, prominence=0.5)[0]
+        return cls(num_peaks=len(peaks))
+
+    def train(self, X: Tensor, Y: Tensor, epochs: int = 1000, lr: float = 0.01) -> None:
+        """训练组合峰模型"""
+        # 生成优化器
+        self.train()
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        # 生成损失函数
+        loss_fn = nn.MSELoss()
+        # 训练
+        for epoch in range(epochs):
+            # 前向传播
+            Y_pred = self(X)
+            # 计算损失
+            loss = loss_fn(Y_pred, Y)
+            # 反向传播
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            # 打印训练信息
+            if epoch % 100 == 0:
+                print(f"Epoch {epoch} loss: {loss.item()}")
