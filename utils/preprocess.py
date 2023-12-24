@@ -12,7 +12,7 @@ class DataPreprocessor:
         self.X = DataPreprocessor.wapper(X)
         self.Y = DataPreprocessor.wapper(Y)
         self.ax = ax or plt.subplots(figsize=(12, 6))[1]
-        self.__step("original")
+        self.__step("Original")
 
     @staticmethod
     def wapper(ele: T) -> Tensor:

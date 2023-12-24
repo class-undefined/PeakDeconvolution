@@ -22,7 +22,7 @@ def train(X: Optional[Tensor] = None,
           Y: Optional[Tensor] = None,
           preprocessor: Optional[DataPreprocessor] = None,
           num_peaks: Optional[int] = None,
-          epochs=1000,
+          epochs=500,
           batch_size=100,
           lr=0.01,
           seed: Optional[int] = None
@@ -62,14 +62,14 @@ def test():
 def test1():
     p = DataPreprocessor.from_text(
         "datas/UV_Vis_TwoPeak.txt")
-    train(preprocessor=p, num_peaks=1, epochs=2000, lr=20)
+    train(preprocessor=p, epochs=200, lr=50)
 
 
 def test2():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv")
-    train(preprocessor=p, epochs=1000,
-          batch_size=100, lr=0.0001, seed=79)
+    train(preprocessor=p, epochs=500,
+          batch_size=100, lr=0.001, seed=79)
 
 
 def test3():
