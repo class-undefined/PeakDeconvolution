@@ -61,6 +61,13 @@ class DataPreprocessor:
                 Y.append(float(y))
         return DataPreprocessor(X, Y)
 
+    @staticmethod
+    def from_csv(path: str):
+        """从 CSV 文件中读取数据"""
+        import pandas as pd
+        df = pd.read_csv(path)
+        return DataPreprocessor(df["x"].to_numpy(), df["y"].to_numpy())
+
 
 def test():
     x = np.linspace(-3, 3, 100)

@@ -114,15 +114,19 @@ class CombinedPeaks(nn.Module):
         peaks = find_peaks(Y.detach().numpy())[0]
         return cls(num_peaks=len(peaks))
 
-    def train_model(self, X: Tensor, Y: Tensor, epochs: int = 1000, lr: float = 0.01) -> None:
+    def train_model(self, X: Tensor, Y: Tensor, batch_size: int = 1000, lr: float = 0.01) -> None:
         """训练组合峰模型"""
         # 生成优化器
         self.train()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        X = X.to(device)
+        Y = Y.to(device)
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         # 计算对数损失
         loss_fn = nn.MSELoss()
+        s = 0
         # 训练
-        for epoch in range(epochs):
+        for _ in range(batch_size):
             # 前向传播
             Y_pred = self(X)
             # 计算损失
@@ -131,6 +135,5 @@ class CombinedPeaks(nn.Module):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            # 打印训练信息
-            if epoch % 100 == 0:
-                print(f"Epoch {epoch} loss: {loss.item()}")
+            s += loss.item()
+        return s / batch_size
