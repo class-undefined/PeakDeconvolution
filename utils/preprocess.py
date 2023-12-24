@@ -15,7 +15,7 @@ class DataPreprocess:
         self.__step("original")
 
     @staticmethod
-    def wapper(ele: Union[Tensor, np.ndarray]) -> Tensor:
+    def wapper(ele: T) -> Tensor:
         """转换为 Tensor"""
         if isinstance(ele, Tensor):
             return ele
