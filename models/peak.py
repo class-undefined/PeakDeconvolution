@@ -9,15 +9,21 @@ class PseudoVoigtPeak(nn.Module):
     """伪伏依特峰模块"""
     count = 0
 
-    def __init__(self, id: int = None) -> None:
+    def __init__(self, id: int = None, x0: Optional[float] = None, y0: Optional[float] = None) -> None:
         super(PseudoVoigtPeak, self).__init__()
         self.typ = "PseudoVoigtPeak"
         self.id = id or PseudoVoigtPeak.count
         PseudoVoigtPeak.count += 1
         # A: 峰的最大强度（高度）参数
-        self.A = nn.Parameter(torch.randn(1))
+        if y0 is None:
+            self.A = nn.Parameter(torch.randn(1))
+        else:
+            self.A = nn.Parameter(torch.tensor(y0))
         # x0: 峰的中心位置参数
-        self.x0 = nn.Parameter(torch.randn(1))
+        if x0 is None:
+            self.x0 = nn.Parameter(torch.randn(1))
+        else:
+            self.x0 = nn.Parameter(torch.tensor(x0))
         # gamma: 洛伦兹成分的半高宽参数
         self.gamma = nn.Parameter(torch.randn(1))
         # sigma: 高斯成分的标准差参数
@@ -69,11 +75,17 @@ class PseudoVoigtPeak(nn.Module):
 class CombinedPeaks(nn.Module):
     """组合峰模块"""
 
-    def __init__(self, num_peaks: int) -> None:
+    def __init__(self, peaks: Union[int, Tuple[List[int], List[int]]]) -> None:
+        """初始化组合峰模块
+        @param `peaks`: 峰的数量或峰的位置列表
+        """
         super(CombinedPeaks, self).__init__()
         # peaks: 存储多个伪伏依特峰的模块列表
-        self.peaks = nn.ModuleList([PseudoVoigtPeak(id=i)
-                                   for i in range(num_peaks)])
+        peaks = ([None for _ in peaks], [None for _ in peaks]) if isinstance(
+            peaks, int) else peaks
+        X, Y = peaks
+        self.peaks = nn.ModuleList([PseudoVoigtPeak(id=i, x0=X[i], y0=Y[i])
+                                   for i in range(len(X))])
 
     def forward(self, X: Tensor) -> Tensor:
         # 将所有峰的贡献加总，以生成组合的光谱
@@ -107,14 +119,15 @@ class CombinedPeaks(nn.Module):
         this.peaks = nn.ModuleList(peaks)
         return this
 
-    @classmethod
-    def from_peaks(cls, Y: Tensor) -> "CombinedPeaks":
+    @staticmethod
+    def from_peaks(X: Tensor, Y: Tensor) -> "CombinedPeaks":
         """通过识别峰值点来构建组合峰模型"""
         from scipy.signal import find_peaks
-        peaks = find_peaks(Y.detach().numpy())[0]
-        return cls(num_peaks=len(peaks))
+        Y = Y.detach().numpy()
+        peaks = find_peaks(Y)[0]
+        return CombinedPeaks(peaks=(X[peaks], Y[peaks]))
 
-    def train_model(self, X: Tensor, Y: Tensor, batch_size: int = 1000, lr: float = 0.01) -> None:
+    def train_model(self, X: Tensor, Y: Tensor, epochs=100, batch_size=100, lr: float = 0.01) -> None:
         """训练组合峰模型"""
         # 生成优化器
         self.train()
@@ -124,16 +137,17 @@ class CombinedPeaks(nn.Module):
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         # 计算对数损失
         loss_fn = nn.MSELoss()
-        s = 0
         # 训练
-        for _ in range(batch_size):
-            # 前向传播
-            Y_pred = self(X)
-            # 计算损失
-            loss = loss_fn(Y_pred, Y)
-            # 反向传播
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            s += loss.item()
-        return s / batch_size
+        for epoch in range(epochs):
+            s = 0
+            for _ in range(batch_size):
+                # 前向传播
+                Y_pred = self(X)
+                # 计算损失
+                loss = loss_fn(Y_pred, Y)
+                # 反向传播
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                s += loss.item()
+            print(f"Epoch {epoch}: {s / batch_size}")

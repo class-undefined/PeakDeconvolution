@@ -21,7 +21,7 @@ def set_seed(seed):
 def train(X: Optional[Tensor] = None,
           Y: Optional[Tensor] = None,
           preprocessor: Optional[DataPreprocessor] = None,
-          num_peaks: Optional[int] = 1,
+          num_peaks: Optional[int] = None,
           epochs=1000,
           batch_size=100,
           lr=0.01,
@@ -46,11 +46,9 @@ def train(X: Optional[Tensor] = None,
         preprocessor = DataPreprocessor(X, Y)
         X, Y = preprocessor.export()
     model = CombinedPeaks(
-        num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(Y)
+        num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(X, Y)
     model = model.to(device)
-    for epoch in range(epochs):
-        loss = model.train_model(X, Y, batch_size=batch_size, lr=lr)
-        print(f"Epoch {epoch}: {loss}")
+    model.train_model(X, Y, epochs=epochs, batch_size=batch_size, lr=lr)
     model.figure(X, ax=preprocessor.ax)
     preprocessor.show()
 
@@ -70,7 +68,8 @@ def test1():
 def test2():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv")
-    train(preprocessor=p, num_peaks=2, epochs=50000, lr=0.005, seed=5)
+    train(preprocessor=p, epochs=1000,
+          batch_size=100, lr=0.0001, seed=79)
 
 
 def test3():
