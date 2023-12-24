@@ -25,13 +25,13 @@ class PseudoVoigtPeak(nn.Module):
         # eta: 高斯成分和洛伦兹成分的混合比例参数
         self.eta = nn.Parameter(torch.randn(1))
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, X: Tensor) -> Tensor:
         # 计算洛伦兹成分
         lorentzian = (self.A / torch.pi) * (self.gamma /
-                                            ((x - self.x0) ** 2 + self.gamma ** 2))
+                                            ((X - self.x0) ** 2 + self.gamma ** 2))
         # 计算高斯成分
         gaussian = (self.A / (self.sigma * torch.sqrt(torch.tensor(2 * torch.pi)))) * \
-            torch.exp(-0.5 * ((x - self.x0) / self.sigma) ** 2)
+            torch.exp(-0.5 * ((X - self.x0) / self.sigma) ** 2)
         # 结合洛伦兹成分和高斯成分，生成伪伏依特峰
         return self.eta * lorentzian + (1 - self.eta) * gaussian
 
@@ -47,7 +47,7 @@ class PseudoVoigtPeak(nn.Module):
         return peak
 
     def name(self):
-        return f"Peak{self.id}[A={self.A.item()}, x0={self.x0.item()}, γ={self.gamma.item()}, σ={self.sigma.item()}, η={self.eta.item()}]"
+        return f"Peak{self.id}[A={self.A.item():.2f}, x0={self.x0.item():.2f}, γ={self.gamma.item():.2f}, σ={self.sigma.item():.2f}, η={self.eta.item():.2f}]"
 
     def figure(self, X: Tensor, ax: Optional[plt.Axes] = None) -> plt.Figure:
         was_training = self.training
@@ -75,20 +75,21 @@ class CombinedPeaks(nn.Module):
         self.peaks = nn.ModuleList([PseudoVoigtPeak(id=i)
                                    for i in range(num_peaks)])
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, X: Tensor) -> Tensor:
         # 将所有峰的贡献加总，以生成组合的光谱
-        return sum(peak(x) for peak in self.peaks)
+        return sum(peak(X) for peak in self.peaks)
 
     def name(self):
         return f"CombinedPeaks [{len(self.peaks)}]"
 
-    def figure(self, X: Tensor) -> plt.Figure:
+    def figure(self, X: Tensor, ax: Optional[plt.Axes] = None) -> plt.Axes:
         # 检查是否提供了轴对象，如果没有，则创建新图形和轴
         # 生成组合峰的可视化图像
         was_training = self.training
         self.eval()
-        Y = torch.stack([self.forward(x) for x in X]).detach()
-        fig, ax = plt.subplots(figsize=(12, 6))
+        Y = self(X).detach()
+        if ax is None:
+            _, ax = plt.subplots(figsize=(12, 6))
         ax.plot(X.numpy(), Y.numpy(), label=self.name())
         for peak in self.peaks:
             peak.figure(X, ax=ax)
@@ -97,7 +98,7 @@ class CombinedPeaks(nn.Module):
         ax.legend(loc='upper center', bbox_to_anchor=(0.25, 1))
         if was_training:
             self.train()
-        return fig, ax
+        return ax
 
     @classmethod
     def gen(cls, peaks: List["PseudoVoigtPeak"]) -> "CombinedPeaks":
@@ -110,15 +111,15 @@ class CombinedPeaks(nn.Module):
     def from_peaks(cls, Y: Tensor) -> "CombinedPeaks":
         """通过识别峰值点来构建组合峰模型"""
         from scipy.signal import find_peaks
-        peaks = find_peaks(Y.detach().numpy(), prominence=0.5)[0]
+        peaks = find_peaks(Y.detach().numpy())[0]
         return cls(num_peaks=len(peaks))
 
-    def train(self, X: Tensor, Y: Tensor, epochs: int = 1000, lr: float = 0.01) -> None:
+    def train_model(self, X: Tensor, Y: Tensor, epochs: int = 1000, lr: float = 0.01) -> None:
         """训练组合峰模型"""
         # 生成优化器
         self.train()
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
-        # 生成损失函数
+        # 计算对数损失
         loss_fn = nn.MSELoss()
         # 训练
         for epoch in range(epochs):
