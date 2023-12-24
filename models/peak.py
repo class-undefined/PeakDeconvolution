@@ -97,7 +97,7 @@ class CombinedPeaks(nn.Module):
         ax.legend(loc='upper center', bbox_to_anchor=(0.25, 1))
         if was_training:
             self.train()
-        return fig
+        return fig, ax
 
     @classmethod
     def gen(cls, peaks: List["PseudoVoigtPeak"]) -> "CombinedPeaks":
@@ -110,7 +110,7 @@ class CombinedPeaks(nn.Module):
     def from_peaks(cls, Y: Tensor) -> "CombinedPeaks":
         """通过识别峰值点来构建组合峰模型"""
         from scipy.signal import find_peaks
-        peaks = find_peaks(Y, prominence=0.5)[0]
+        peaks = find_peaks(Y.detach().numpy(), prominence=0.5)[0]
         return cls(num_peaks=len(peaks))
 
     def train(self, X: Tensor, Y: Tensor, epochs: int = 1000, lr: float = 0.01) -> None:
