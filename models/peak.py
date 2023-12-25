@@ -146,7 +146,6 @@ class CombinedPeaks(nn.Module):
                     epochs=100,
                     batch_size=100,
                     lr: float = 0.01,
-                    device: Optional[str] = None
                     ) -> None:
         """训练组合峰模型"""
         # 生成优化器

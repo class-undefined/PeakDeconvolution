@@ -51,7 +51,7 @@ def train(X: Optional[Tensor] = None,
         num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(X, Y)
     model = model.to(get_device(device))
     model.train_model(X, Y, epochs=epochs,
-                      batch_size=batch_size, lr=lr, device=device)
+                      batch_size=batch_size, lr=lr)
     model.figure(X, ax=preprocessor.ax)
     print(model.status())
     preprocessor.show()
