@@ -71,7 +71,7 @@ def test1():
 
 def test2():
     p = DataPreprocessor.from_csv(
-        "datas/test-deconvolve.csv")
+        "datas/test-deconvolve.csv").smooth()
     train(preprocessor=p,
           epochs=200,
           batch_size=100,
