@@ -151,9 +151,6 @@ class CombinedPeaks(nn.Module):
         """训练组合峰模型"""
         # 生成优化器
         self.train()
-        device = get_device(device=device)
-        X = X.to(device)
-        Y = Y.to(device)
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         # 计算对数损失
         loss_fn = nn.MSELoss()

@@ -43,10 +43,10 @@ def train(X: Optional[Tensor] = None,
     if seed is not None:
         set_seed(seed)
     if preprocessor is not None:
-        X, Y = preprocessor.export()
+        X, Y = preprocessor.export(device=device)
     else:
         preprocessor = DataPreprocessor(X, Y)
-        X, Y = preprocessor.export()
+        X, Y = preprocessor.export(device=device)
     model = CombinedPeaks(
         num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(X, Y)
     model = model.to(get_device(device))

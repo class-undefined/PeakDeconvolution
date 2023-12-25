@@ -4,6 +4,8 @@ from torch import Tensor
 from typing import *
 import matplotlib.pyplot as plt
 
+from .functions import get_device
+
 T = TypeVar("T", Tensor, np.ndarray, List[Union[int, float]])
 
 
@@ -51,9 +53,10 @@ class DataPreprocessor:
         plt.show()
         return self
 
-    def export(self):
+    def export(self, device: Optional[str] = None):
         """导出数据"""
-        return self.X, self.Y
+        device = get_device(device)
+        return self.X.to(device), self.Y.to(device)
 
     @staticmethod
     def from_text(path: str):
