@@ -53,6 +53,7 @@ def train(X: Optional[Tensor] = None,
     model.train_model(X, Y, epochs=epochs,
                       batch_size=batch_size, lr=lr, device=device)
     model.figure(X, ax=preprocessor.ax)
+    print(model.status())
     preprocessor.show()
 
 
@@ -72,7 +73,7 @@ def test2():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv")
     train(preprocessor=p,
-          epochs=500,
+          epochs=200,
           batch_size=100,
           lr=0.001,
           device="cpu",

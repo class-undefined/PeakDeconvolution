@@ -54,7 +54,10 @@ class PseudoVoigtPeak(nn.Module):
         return peak
 
     def name(self):
-        return f"Peak{self.id}[A={self.A.item():.2f}, x0={self.x0.item():.2f}, γ={self.gamma.item():.2f}, σ={self.sigma.item():.2f}, η={self.eta.item():.2f}]"
+        return f"Peak{self.id}"
+
+    def label(self):
+        return f"{self.name()}[A={self.A.item():.2f}, x0={self.x0.item():.2f}, γ={self.gamma.item():.2f}, σ={self.sigma.item():.2f}, η={self.eta.item():.2f}]"
 
     def figure(self, X: Tensor, ax: Optional[plt.Axes] = None) -> plt.Figure:
         was_training = self.training
@@ -67,10 +70,19 @@ class PseudoVoigtPeak(nn.Module):
         Y = torch.stack([self.forward(x) for x in X]).detach()
 
         # 绘图
-        ax.plot(X.numpy(), Y.numpy(), label=self.name())
+        ax.plot(X.numpy(), Y.numpy(), label=self.label())
         if was_training:
             self.train()
         return ax  # 返回轴对象
+
+    def status(self):
+        return {
+            "A": self.A.item(),
+            "x0": self.x0.item(),
+            "gamma": self.gamma.item(),
+            "sigma": self.sigma.item(),
+            "eta": self.eta.item()
+        }
 
 
 class CombinedPeaks(nn.Module):
@@ -159,3 +171,6 @@ class CombinedPeaks(nn.Module):
                 optimizer.step()
                 s += loss.item()
             print(f"Epoch {epoch}: {s / batch_size}")
+
+    def status(self):
+        return {peak.name(): peak.status() for peak in self.peaks}
