@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch import Tensor
 from typing import *
 import matplotlib.pyplot as plt
+from ..utils.functions import get_device
 
 
 class PseudoVoigtPeak(nn.Module):
@@ -16,20 +17,20 @@ class PseudoVoigtPeak(nn.Module):
         PseudoVoigtPeak.count += 1
         # A: 峰的最大强度（高度）参数
         if y0 is None:
-            self.A = nn.Parameter(torch.randn(1))
+            self.A = nn.Parameter(torch.randn(1, dtype=torch.float32))
         else:
-            self.A = nn.Parameter(torch.tensor(y0))
+            self.A = nn.Parameter(torch.tensor(y0, dtype=torch.float32))
         # x0: 峰的中心位置参数
         if x0 is None:
-            self.x0 = nn.Parameter(torch.randn(1))
+            self.x0 = nn.Parameter(torch.randn(1, dtype=torch.float32))
         else:
-            self.x0 = nn.Parameter(torch.tensor(x0))
+            self.x0 = nn.Parameter(torch.tensor(x0, dtype=torch.float32))
         # gamma: 洛伦兹成分的半高宽参数
-        self.gamma = nn.Parameter(torch.randn(1))
+        self.gamma = nn.Parameter(torch.randn(1, dtype=torch.float32))
         # sigma: 高斯成分的标准差参数
-        self.sigma = nn.Parameter(torch.randn(1))
+        self.sigma = nn.Parameter(torch.randn(1, dtype=torch.float32))
         # eta: 高斯成分和洛伦兹成分的混合比例参数
-        self.eta = nn.Parameter(torch.randn(1))
+        self.eta = nn.Parameter(torch.randn(1, dtype=torch.float32))
 
     def forward(self, X: Tensor) -> Tensor:
         # 计算洛伦兹成分
@@ -127,11 +128,18 @@ class CombinedPeaks(nn.Module):
         peaks = find_peaks(Y)[0]
         return CombinedPeaks(peaks=(X[peaks], Y[peaks]))
 
-    def train_model(self, X: Tensor, Y: Tensor, epochs=100, batch_size=100, lr: float = 0.01) -> None:
+    def train_model(self,
+                    X: Tensor,
+                    Y: Tensor,
+                    epochs=100,
+                    batch_size=100,
+                    lr: float = 0.01,
+                    device: Optional[str] = None
+                    ) -> None:
         """训练组合峰模型"""
         # 生成优化器
         self.train()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = get_device(device=device)
         X = X.to(device)
         Y = Y.to(device)
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)

@@ -1,5 +1,6 @@
 from .models.peak import PseudoVoigtPeak, CombinedPeaks
 from .utils.preprocess import DataPreprocessor
+from .utils.functions import get_device
 import torch
 from torch import Tensor
 from typing import Optional
@@ -12,6 +13,7 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)  # 如果使用多个 GPU
+    torch.mps.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
@@ -25,7 +27,8 @@ def train(X: Optional[Tensor] = None,
           epochs=500,
           batch_size=100,
           lr=0.01,
-          seed: Optional[int] = None
+          seed: Optional[int] = None,
+          device: Optional[str] = None
           ):
     """训练组合峰模型
     @param `X`: 输入数据
@@ -37,7 +40,6 @@ def train(X: Optional[Tensor] = None,
     @param `lr`: 学习率
     @param `seed`: 随机数种子
     """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if seed is not None:
         set_seed(seed)
     if preprocessor is not None:
@@ -47,8 +49,9 @@ def train(X: Optional[Tensor] = None,
         X, Y = preprocessor.export()
     model = CombinedPeaks(
         num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(X, Y)
-    model = model.to(device)
-    model.train_model(X, Y, epochs=epochs, batch_size=batch_size, lr=lr)
+    model = model.to(get_device(device))
+    model.train_model(X, Y, epochs=epochs,
+                      batch_size=batch_size, lr=lr, device=device)
     model.figure(X, ax=preprocessor.ax)
     preprocessor.show()
 
@@ -68,8 +71,12 @@ def test1():
 def test2():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv")
-    train(preprocessor=p, epochs=500,
-          batch_size=100, lr=0.001, seed=79)
+    train(preprocessor=p,
+          epochs=500,
+          batch_size=100,
+          lr=0.001,
+          device="cpu",
+          seed=79)
 
 
 def test3():

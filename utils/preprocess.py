@@ -15,14 +15,19 @@ class DataPreprocessor:
         self.__step("Original")
 
     @staticmethod
+    def data_type():
+        return torch.float64
+
+    @staticmethod
     def wapper(ele: T) -> Tensor:
         """转换为 Tensor"""
+        typ = DataPreprocessor.data_type()
         if isinstance(ele, Tensor):
-            return ele
+            return ele.to(typ)
         if isinstance(ele, np.ndarray):
-            return torch.from_numpy(ele)
+            return torch.from_numpy(ele).to(typ)
         if isinstance(ele, list):
-            return torch.tensor(ele)
+            return torch.tensor(ele, dtype=typ)
         raise TypeError(f"Unsupported type: {type(ele)}")
 
     def __step(self, name: str):
