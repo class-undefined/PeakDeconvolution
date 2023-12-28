@@ -85,3 +85,11 @@ def test3():
         "datas/test-deconvolve.csv")
     train(preprocessor=p, num_peaks=2, epochs=500,
           batch_size=100, lr=0.002, seed=5)
+
+
+def test4():
+    p = DataPreprocessor.from_text(
+        "datas/test.txt").smooth(1.5)
+    p.show()
+    # train(preprocessor=p, epochs=200,
+    #       batch_size=50, lr=0.1, seed=5, num_peaks=22, device="cpu")

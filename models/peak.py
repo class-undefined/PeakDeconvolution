@@ -94,7 +94,7 @@ class CombinedPeaks(nn.Module):
         """
         super(CombinedPeaks, self).__init__()
         # peaks: 存储多个伪伏依特峰的模块列表
-        peaks = ([None for _ in peaks], [None for _ in peaks]) if isinstance(
+        peaks = ([None for _ in range(peaks)], [None for _ in range(peaks)]) if isinstance(
             peaks, int) else peaks
         X, Y = peaks
         self.peaks = nn.ModuleList([PseudoVoigtPeak(id=i, x0=X[i], y0=Y[i])
