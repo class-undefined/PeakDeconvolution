@@ -36,7 +36,7 @@ class PseudoVoigtPeak(nn.Module):
     def from_peaks(X: Tensor, Y: Tensor) -> "PseudoVoigtPeak":
         """通过识别峰值点来构建组合峰模型"""
         from scipy.signal import find_peaks
-        Y = Y.detach().numpy()
+        Y = Y.cpu().detach().numpy()
         peak_ids = find_peaks(Y)[0]
         peaks = []
         for i in peak_ids:
@@ -93,7 +93,7 @@ class PseudoVoigtPeak(nn.Module):
             fig, ax = plt.subplots()
         Y: Tensor = self(X).detach()
         for i, y in enumerate(Y):
-            ax.plot(X.numpy(), y, label=self.label(i))
+            ax.plot(X.cpu().numpy(), y.cpu(), label=self.label(i))
         if was_training:
             self.train()
         return ax  # 返回轴对象

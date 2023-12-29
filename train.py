@@ -53,9 +53,9 @@ def train(X: Optional[Tensor] = None,
     model = model.to(get_device(device))
     model.train_model(X, Y, epochs=epochs,
                       batch_size=batch_size, lr=lr)
-    # model.figure(X, ax=preprocessor.ax)
-    preprocessor.ax.plot(X.detach().numpy(), model(
-        X).sum(dim=0).detach().numpy(), label="Fitted")
+    model.figure(X, ax=preprocessor.ax)
+    preprocessor.ax.plot(X.cpu().detach().numpy(), model(
+        X).sum(dim=0).cpu().detach().numpy(), label="Fitted")
     print(len(model.status()))
     print(f"Time cost: {time() - begin:.2f}s")
     preprocessor.show()
@@ -95,5 +95,5 @@ def test4():
     p = DataPreprocessor.from_text(
         "datas/test.txt").smooth(1.5)
     # p.show()
-    train(preprocessor=p, epochs=600,
-          batch_size=64, lr=0.1, seed=8, device="cpu")
+    train(preprocessor=p, epochs=1600,
+          batch_size=64, lr=0.05, seed=16, device="cuda")
