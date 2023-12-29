@@ -13,7 +13,7 @@ class DataPreprocessor:
     def __init__(self, X: T, Y: T, ax: Optional[plt.Axes] = None) -> None:
         self.X = DataPreprocessor.wapper(X)
         self.Y = DataPreprocessor.wapper(Y)
-        self.ax = ax or plt.subplots(figsize=(12, 6))[1]
+        self.ax = ax or plt.subplots(figsize=(15, 8))[1]
         self.__step("Original")
 
     @staticmethod
@@ -49,7 +49,7 @@ class DataPreprocessor:
         ax = self.ax
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.legend(loc='upper center', bbox_to_anchor=(0.25, 1))
+        ax.legend(loc='upper left', bbox_to_anchor=(0.8, 1), fontsize=7)
         plt.show()
         return self
 

@@ -36,17 +36,6 @@ def test_figure_method1():
     plt.show()
 
 
-def test_figure_method2():
-    # 创建 CombinedPeaks 实例
-    peak1 = PseudoVoigtPeak.gen(1.0, 0.0, 1.0, 1.0, 0.5)
-    peak2 = PseudoVoigtPeak.gen(1.0, 1.0, 1.0, 1.0, 0.5)
-
-    # 生成输入数据 X
-    X = torch.linspace(-5, 5, 100)
-    CombinedPeaks.gen([peak1, peak2]).figure(X)
-    plt.show()
-
-
 def test_gaussian():
     # 生成示例数据
     x = np.linspace(-3, 3, 100)

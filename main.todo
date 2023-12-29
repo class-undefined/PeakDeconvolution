@@ -22,4 +22,4 @@
     ✔ 3. 增加数据预处理模块 DataPreprocess @done(23-12-24 16:34)
     ✔ 4. 训练器 @done(23-12-24 20:02)
     ✔ 5. 模型初始解优化 (通过峰顶坐标确定A与x0的初始解) @done(23-12-24 21:00)
-    ☐ 6. 重构模型设计(移除 CombinedPeaks 模块, 对 PseudoVoigtPeak 支持并行计算) @started(23-12-28 20:28)
+    ✔ 6. 重构模型设计(移除 CombinedPeaks 模块, 对 PseudoVoigtPeak 支持并行计算) @started(23-12-28 20:28) @done(23-12-29 17:59) @lasted(21h31m51s)

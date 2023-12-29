@@ -1,4 +1,4 @@
-from .models.peak import PseudoVoigtPeak, CombinedPeaks
+from .models.peak import PseudoVoigtPeak
 from .utils.preprocess import DataPreprocessor
 from .utils.functions import get_device
 import torch
@@ -40,6 +40,8 @@ def train(X: Optional[Tensor] = None,
     @param `lr`: 学习率
     @param `seed`: 随机数种子
     """
+    from time import time
+    begin = time()
     if seed is not None:
         set_seed(seed)
     if preprocessor is not None:
@@ -47,13 +49,15 @@ def train(X: Optional[Tensor] = None,
     else:
         preprocessor = DataPreprocessor(X, Y)
         X, Y = preprocessor.export(device=device)
-    model = CombinedPeaks(
-        num_peaks) if num_peaks is not None else CombinedPeaks.from_peaks(X, Y)
+    model = PseudoVoigtPeak.from_peaks(X, Y)
     model = model.to(get_device(device))
     model.train_model(X, Y, epochs=epochs,
                       batch_size=batch_size, lr=lr)
-    model.figure(X, ax=preprocessor.ax)
-    print(model.status())
+    # model.figure(X, ax=preprocessor.ax)
+    preprocessor.ax.plot(X.detach().numpy(), model(
+        X).sum(dim=0).detach().numpy(), label="Fitted")
+    print(len(model.status()))
+    print(f"Time cost: {time() - begin:.2f}s")
     preprocessor.show()
 
 
@@ -73,23 +77,23 @@ def test2():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv").smooth()
     train(preprocessor=p,
-          epochs=200,
-          batch_size=100,
+          epochs=500,
+          batch_size=28,
           lr=0.001,
           device="cpu",
-          seed=79)
+          seed=50)
 
 
 def test3():
     p = DataPreprocessor.from_csv(
         "datas/test-deconvolve.csv")
-    train(preprocessor=p, num_peaks=2, epochs=500,
+    train(preprocessor=p, num_peaks=2, epochs=500, device="cpu",
           batch_size=100, lr=0.002, seed=5)
 
 
 def test4():
     p = DataPreprocessor.from_text(
         "datas/test.txt").smooth(1.5)
-    p.show()
-    # train(preprocessor=p, epochs=200,
-    #       batch_size=50, lr=0.1, seed=5, num_peaks=22, device="cpu")
+    # p.show()
+    train(preprocessor=p, epochs=600,
+          batch_size=64, lr=0.1, seed=8, device="cpu")
