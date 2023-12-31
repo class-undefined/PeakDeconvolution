@@ -101,11 +101,21 @@ def test4():
         preprocessor=p, epochs=500, batch_size=32, lr=0.05, seed=5, device="cuda"
     )
     model.export("archived/test4.pth")
+    model.show()
     # print(model(torch.tensor([0]).to(get_device("cuda"))))
 
 
 def test5():
+    p = DataPreprocessor.from_text("datas/test.txt").rectify().smooth(1.5)
     model = PseudoVoigtPeak.load("archived/test4.pth", device="cuda")
-    X = torch.tensor([0])
-    Y = model(X)
-    print(Y)
+    # model.figure(p.X, ax=p.ax)
+    Y = model(model.x0)
+    model.figure(p.X, ax=p.ax)
+    print(
+        model.x0.cpu().detach().numpy(),
+    )
+    p.ax.scatter(
+        model.x0.cpu().detach().numpy(), torch.max(Y.cpu().detach(), dim=0).values
+    )
+    # print(torch.max(Y, dim=0), model.x0)
+    model.show()

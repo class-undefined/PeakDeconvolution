@@ -75,7 +75,6 @@ class PseudoVoigtPeak(nn.Module):
         result = (
             self.eta.unsqueeze(1) * lorentzian + (1 - self.eta.unsqueeze(1)) * gaussian
         )
-
         # 结合洛伦兹成分和高斯成分，生成伪伏依特峰
         return result
 
@@ -96,9 +95,14 @@ class PseudoVoigtPeak(nn.Module):
         return model.eval()
 
     def cost(self) -> Tensor:
-        """计算代价"""
+        """TODO: 计算代价
+        需要考虑到峰的重叠、峰值是否为负数等因素
+        """
         X = self.x0.detach()
-        fs = self(X)
+        peak_size = self.A.size(0)  # 峰的个数
+        peak_matrix = self(X)  # 峰值矩阵
+        torch.max(peak_matrix, dim=0)
+        peak_matrix.max(dim=1)
         return
 
     def get_state(self, i: int):
@@ -128,7 +132,14 @@ class PseudoVoigtPeak(nn.Module):
             ax.plot(X.cpu().numpy(), y.cpu(), label=self.label(i))
         if was_training:
             self.train()
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.legend(loc="upper left", bbox_to_anchor=(0.8, 1), fontsize=7)
+
         return ax  # 返回轴对象
+
+    def show(self):
+        plt.show()
 
     def status(self):
         return [self.get_state(i) for i in range(len(self.A))]
