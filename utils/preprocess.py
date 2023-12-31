@@ -32,17 +32,25 @@ class DataPreprocessor:
             return torch.tensor(ele, dtype=typ)
         raise TypeError(f"Unsupported type: {type(ele)}")
 
-    def __step(self, name: str):
+    def __step(self, name: str, show=True):
         """绘制当前数据"""
+        if show is False:
+            return
         self.ax.plot(self.X.detach().numpy(),
                      self.Y.detach().numpy(), label=name)
+    
+    def rectify(self, show=True) -> "DataPreprocessor":
+        """将 Y 中小于 0 的部分设置为 0"""
+        self.Y = torch.max(self.Y, torch.zeros_like(self.Y))
+        self.__step("rectified", show=show)
+        return self
 
-    def smooth(self, sigma: float = 5) -> "DataPreprocessor":
+    def smooth(self, sigma: float = 5, show=True) -> "DataPreprocessor":
         """平滑处理"""
         from scipy.ndimage import gaussian_filter
         self.Y = torch.from_numpy(
             gaussian_filter(self.Y.detach().numpy(), sigma))
-        self.__step(f"smoothed (σ={sigma})")
+        self.__step(f"smoothed (σ={sigma})", show=show)
         return self
 
     def show(self):

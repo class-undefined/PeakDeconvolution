@@ -93,7 +93,7 @@ def test3():
 
 def test4():
     p = DataPreprocessor.from_text(
-        "datas/test.txt").smooth(1.5)
-    # p.show()
-    train(preprocessor=p, epochs=1600,
-          batch_size=64, lr=0.05, seed=16, device="cuda")
+        "datas/test.txt").rectify().smooth(1.5)
+    p.show()
+    # train(preprocessor=p, epochs=1600,
+    #       batch_size=64, lr=0.05, seed=16, device="cuda")
