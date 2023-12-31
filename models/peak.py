@@ -9,13 +9,12 @@ from torch.utils.data import DataLoader, TensorDataset
 
 class PseudoVoigtPeak(nn.Module):
     """伪伏依特峰模块"""
-    count = 0
 
     def __init__(self, peaks: List[Tuple[int, int]]) -> None:
         super(PseudoVoigtPeak, self).__init__()
+        self.constructor_params = peaks
         self.typ = "PseudoVoigtPeak"
-        self.A, self.x0, self.gamma, self.sigma, self.eta = self.init_params(
-            peaks)
+        self.A, self.x0, self.gamma, self.sigma, self.eta = self.init_params(peaks)
 
     @staticmethod
     def init_params(peaks: List[Tuple[int, int]]):
@@ -36,6 +35,7 @@ class PseudoVoigtPeak(nn.Module):
     def from_peaks(X: Tensor, Y: Tensor) -> "PseudoVoigtPeak":
         """通过识别峰值点来构建组合峰模型"""
         from scipy.signal import find_peaks
+
         Y = Y.cpu().detach().numpy()
         peak_ids = find_peaks(Y)[0]
         peaks = []
@@ -43,25 +43,63 @@ class PseudoVoigtPeak(nn.Module):
             peaks.append((X[i], Y[i]))
         return PseudoVoigtPeak(peaks=peaks)
 
+    @staticmethod
+    def analyze_peaks(peaks: List[Tuple[int, int]]):
+        """分析峰的数量"""
+        peaks = sorted(peaks, key=lambda x: x[1], reverse=True)  # 按照峰的高度排序
+        size = len(peaks)
+        final_peaks = []
+
+        return
+
     def forward(self, X: Tensor) -> Tensor:
         # 计算洛伦兹成分
+        X = X.to(self.A.device)
         X_expanded = X.unsqueeze(0).expand(len(self.A), -1)
 
         # 计算洛伦兹成分
-        lorentzian = (self.A.unsqueeze(1) / torch.pi) * (self.gamma.unsqueeze(1) /
-                                                         ((X_expanded - self.x0.unsqueeze(1)) ** 2 + self.gamma.unsqueeze(1) ** 2))
+        lorentzian = (self.A.unsqueeze(1) / torch.pi) * (
+            self.gamma.unsqueeze(1)
+            / ((X_expanded - self.x0.unsqueeze(1)) ** 2 + self.gamma.unsqueeze(1) ** 2)
+        )
 
         # 计算高斯成分
-        gaussian = (self.A.unsqueeze(1) / (self.sigma.unsqueeze(1) * torch.sqrt(torch.tensor(2 * torch.pi)))) * \
-            torch.exp(-0.5 * ((X_expanded - self.x0.unsqueeze(1)) /
-                      self.sigma.unsqueeze(1)) ** 2)
+        gaussian = (
+            self.A.unsqueeze(1)
+            / (self.sigma.unsqueeze(1) * torch.sqrt(torch.tensor(2 * torch.pi)))
+        ) * torch.exp(
+            -0.5 * ((X_expanded - self.x0.unsqueeze(1)) / self.sigma.unsqueeze(1)) ** 2
+        )
 
         # 结合洛伦兹成分和高斯成分
-        result = self.eta.unsqueeze(
-            1) * lorentzian + (1 - self.eta.unsqueeze(1)) * gaussian
+        result = (
+            self.eta.unsqueeze(1) * lorentzian + (1 - self.eta.unsqueeze(1)) * gaussian
+        )
 
         # 结合洛伦兹成分和高斯成分，生成伪伏依特峰
         return result
+
+    def export(self, path: str):
+        torch.save(
+            {
+                "weights": self.state_dict(),
+                "constructor_params": self.constructor_params,
+            },
+            path,
+        )
+
+    @classmethod
+    def load(cls, path: str, device: Optional[str] = None):
+        checkpoint = torch.load(path, map_location=get_device(device))
+        model = cls(checkpoint["constructor_params"]).to(get_device(device))
+        model.load_state_dict(checkpoint["weights"])
+        return model.eval()
+
+    def cost(self) -> Tensor:
+        """计算代价"""
+        X = self.x0.detach()
+        fs = self(X)
+        return
 
     def get_state(self, i: int):
         A = self.A[i].item()
@@ -69,13 +107,7 @@ class PseudoVoigtPeak(nn.Module):
         gamma = self.gamma[i].item()
         sigma = self.sigma[i].item()
         eta = self.eta[i].item()
-        return {
-            "A": A,
-            "x0": x0,
-            "gamma": gamma,
-            "sigma": sigma,
-            "eta": eta
-        }
+        return {"A": A, "x0": x0, "gamma": gamma, "sigma": sigma, "eta": eta}
 
     def label(self, i: int):
         A = self.A[i].item()
@@ -101,13 +133,14 @@ class PseudoVoigtPeak(nn.Module):
     def status(self):
         return [self.get_state(i) for i in range(len(self.A))]
 
-    def train_model(self,
-                    X: Tensor,
-                    Y: Tensor,
-                    epochs=100,
-                    batch_size=100,
-                    lr: float = 0.01,
-                    ) -> None:
+    def train_model(
+        self,
+        X: Tensor,
+        Y: Tensor,
+        epochs=100,
+        batch_size=100,
+        lr: float = 0.01,
+    ) -> None:
         """训练组合峰模型"""
         # 生成优化器
         self.train()
