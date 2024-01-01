@@ -15,7 +15,9 @@
                 ☐ 3.3.2 不考虑重叠峰
                     ☐ 3.3.2.2.1 意味着识别出顶峰就可以确定中心位置
             ☐ 3.3.3 Peak需要分段处理
-
+    ☐ 4. 参考文献
+        ✔ [An automatic peak deconvolution method for Raman spectra of terrestrial carbonaceous material for application to the geothermometers of Kouketsu et al. (2014)](https://onlinelibrary.wiley.com/doi/full/10.1111/iar.12467) @done(24-01-01 19:20)
+        ✔ [A robust and automated deconvolution algorithm of peaks in spectroscopic data](https://rdw.rowan.edu/cgi/viewcontent.cgi?article=3659&context=etd) @done(24-01-01 19:20)
 ☐ 功能
     ✔ 1. 模型定义 @done(23-12-23 21:30)
     ✔ 2. 模型图表展示 @done(23-12-23 21:31)
