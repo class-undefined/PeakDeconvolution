@@ -13,6 +13,8 @@ class DataPreprocessor:
     def __init__(self, X: T, Y: T, ax: Optional[plt.Axes] = None) -> None:
         self.X = DataPreprocessor.wapper(X)
         self.Y = DataPreprocessor.wapper(Y)
+        self.max_val = self.Y.max(dim=0).values.item()
+        self.min_val = self.Y.min(dim=0).values.item()
         self.ax = ax or plt.subplots(figsize=(15, 8))[1]
         self.ax.set_xlabel("X")
         self.ax.set_ylabel("Y")
@@ -34,6 +36,12 @@ class DataPreprocessor:
         if isinstance(ele, list):
             return torch.tensor(ele, dtype=typ)
         raise TypeError(f"Unsupported type: {type(ele)}")
+
+    def normalize(self, show=True) -> "DataPreprocessor":
+        """将 Y 归一化到[0, 1]区间"""
+        self.Y = (self.Y - self.min_val) / (self.max_val - self.min_val)
+        self.__step(f"normalized", show=show)
+        return self
 
     def __step(self, name: str, show=True):
         """绘制当前数据"""
